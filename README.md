@@ -67,7 +67,7 @@ The following commands can be used with either `!` or `.`
 ___
 
 ## TechStack
-The tech stack used in stated below.
+The tech stack used is stated below.
 - [Python](https://github.com/ytdl-org/youtube-dl)
 - [Discord Rewrite](https://github.com/Rapptz/discord.py)
 - [Spotipy](https://github.com/plamere/spotipy)
