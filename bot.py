@@ -1,9 +1,11 @@
-
+import dotenv
+import os
 from discord.ext import commands
 
 from utils.music_player import MusicPlayer
 
-bot = commands.Bot(command_prefix="!", case_insensitive=True)
+dotenv.load_dotenv(".env")
+bot = commands.Bot(command_prefix=["!", "."], case_insensitive=True)
 
 
 @bot.event
@@ -13,4 +15,4 @@ async def on_ready():
 
 
 bot.add_cog(MusicPlayer(bot))
-bot.run("NzgyNjMyMDY2OTE0OTc1Nzk0.X8PA6Q.cFl3SQ7l4B4tuo873hJEgqO7sFA")
+bot.run(os.getenv('DISCORD_KEY'))

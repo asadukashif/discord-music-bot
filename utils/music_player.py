@@ -59,7 +59,7 @@ class MusicPlayer(commands.Cog):
             node = objects[server_id].queue.pop()
 
             if node is None:
-                return
+                return objects[server_id].reset()
             else:
                 player = node.get('player')
                 objects[server_id].current_song = player
@@ -69,7 +69,6 @@ class MusicPlayer(commands.Cog):
                 ctx.voice_client.play(
                     player, after=lambda e: play_song())
 
-        # Just sets up the ServerObject for the current server if it doesn't exist.
         init_server_object(ctx)
 
         voice_state = ctx.author.voice
@@ -160,7 +159,7 @@ class MusicPlayer(commands.Cog):
             ctx.voice_client.source.volume = volume / 100
             await ctx.send(embed=basic_embed(f"Changed volume to {volume}%"))
         else:
-            await ctx.send(embed=common_embed(name="Volume Level", value="The current volume is " + ctx.voice_client.source.volume * 100))
+            await ctx.send(embed=common_embed(name="Volume Level", value="The current volume is " + str(ctx.voice_client.source.volume * 100)))
 
     @ commands.command(aliases=[])
     async def stop(self, ctx: commands.Context):
@@ -218,7 +217,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command(aliases=['q'])
     async def queue(self, ctx: commands.Context):
-        """Displays the song queue"""
+        """Displays the songs in queue"""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -259,6 +258,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command(aliases=[])
     async def shuffle(self, ctx: commands.Context):
+        """Randomly shuffles the queue."""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -275,6 +275,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command()
     async def clear(self, ctx: commands.Context):
+        """Clears the queue"""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -288,6 +289,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command()
     async def seek(self, ctx: commands.Context, *, time: int = -1):
+        """Skips to a certain second on the audio"""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -299,7 +301,7 @@ class MusicPlayer(commands.Cog):
         current_song = objects[server_id].current_song
         song_duration = current_song.duration_secs
         song_url = current_song.url
-        if (time <= 0):
+        if (time < 0):
             return await ctx.send(embed=common_embed(value="Enter a valid time", name="Error Seeking", color=ERROR))
         if (time >= song_duration):
             return await ctx.send(embed=common_embed(value="You can't seek past the Audio's length", name="Error Seeking", color=ERROR))
@@ -316,6 +318,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command()
     async def now(self, ctx: commands.Context):
+        """Shows the currently playing song"""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -333,27 +336,6 @@ class MusicPlayer(commands.Cog):
                                                            duration=player.duration))
         else:
             return await ctx.send(embed=common_embed(value="There's no song currently playing", name="Error getting the current song", color=ERROR))
-
-    @ commands.command()
-    async def loop(self, ctx: commands.Context):
-        global objects
-
-        server_id = str(ctx.guild.id)
-        voice_state = ctx.author.voice
-
-        init_server_object(ctx)
-
-        if not voice_state:
-            return await ctx.send(embed=common_embed(value="You must join a Voice Channel first", name="Error playing audio", color=ERROR))
-
-        objects[server_id].loop = not objects[server_id].loop
-        await ctx.send(embed=common_embed(value=f"The current loop status is {objects[server_id].loop}", name="Loop Status Updated"))
-
-        # if objects[server_id].current_song:
-        #     objects[server_id].queue.push({
-        #         'player': objects[server_id].current_song,
-        #         'ctx': objects[server_id].current_ctx
-        #     })
 
     @ commands.command(aliases=['qspotify'])
     async def queuespotify(self, ctx: commands.Context, limit: int = 10, playlist_code: str = ""):

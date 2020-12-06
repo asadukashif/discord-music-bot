@@ -1,7 +1,12 @@
+import dotenv
+
+import os
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from typing import *
+
+dotenv.load_dotenv("../.env")
 
 
 class Song():
@@ -28,8 +33,8 @@ class Song():
 
 def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwMfK", limit: int = 10) -> List[Song]:
     sp = spotipy.Spotify(
-        auth_manager=SpotifyClientCredentials(client_id="787f4532686649cbb78e4b9816bb2095",
-                                              client_secret="8146625a4bd14db68eee41318a6d5cb4"))
+        auth_manager=SpotifyClientCredentials(client_id=os.getenv('SPOTIFY_CLIENT_SECRET'),
+                                              client_secret=os.getenv('SPOTIFY_CLIENT_ID')))
     tracks = sp.playlist_tracks(
         spotify_playlist, limit=limit)
 
