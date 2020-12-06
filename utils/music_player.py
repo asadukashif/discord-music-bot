@@ -91,12 +91,13 @@ class MusicPlayer(commands.Cog):
                 player = YTDLSource(FFmpegPCMAudio(filename, **get_ffmpeg_options(seek_time)),
                                     data=data)
 
-                await ctx.send(embed=get_song_start_embed(title=player.title,
-                                                          url=player.url,
-                                                          author=player.artist,
-                                                          thumbnail_obj=player.thumbnail_obj,
-                                                          duration=player.duration, requestee=(
-                                                              ctx.author.nick or ctx.author.display_name)))
+                if not is_seek:
+                    await ctx.send(embed=get_song_start_embed(title=player.title,
+                                                              url=player.url,
+                                                              author=player.artist,
+                                                              thumbnail_obj=player.thumbnail_obj,
+                                                              duration=player.duration, requestee=(
+                                                                  ctx.author.nick or ctx.author.display_name)))
                 if is_seek:
                     objects[server_id].queue.push_to_start({
                         'player': player, 'ctx': ctx})

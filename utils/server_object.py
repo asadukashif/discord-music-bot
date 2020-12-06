@@ -16,5 +16,4 @@ class ServerObject():
     def reset(self):
         self.queue = Queue()
         self.current_song = None
-        self.current_ctx = None
         self.is_first = True
