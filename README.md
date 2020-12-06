@@ -30,22 +30,22 @@ ___
     ![pause](images/pause.png)
 ___
 - ### Resume
-    ![Resume](images/Resume.png)
+    ![Resume](images/resume.png)
 ___
 - ### Queue
-    ![Queue](images/Queue.png)
+    ![Queue](images/queue.png)
 ___
 - ### Now
-    ![Now](images/Now.png)
+    ![Now](images/now.png)
 ___
 - ### Skip
-    ![Skip](images/Skip.png)
+    ![Skip](images/skip.png)
 ___
 - ### Volume
-    ![Volume](images/Volume.png)
+    ![Volume](images/volume.png)
 ___
 - ### Seek
-    ![Seek](images/Seek.png)
+    ![Seek](images/seek.png)
 
 ___
 
