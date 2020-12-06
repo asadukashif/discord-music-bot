@@ -21,31 +21,31 @@ ___
 
 ## Gallery
 - ### Join
-    ![join](images/join.png)
+    ![join](images/join.PNG)
 ___
 - ### Play
-    ![play](images/play.png)
+    ![play](images/play.PNG)
 ___
 - ### Pause
-    ![pause](images/pause.png)
+    ![pause](images/pause.PNG)
 ___
 - ### Resume
-    ![Resume](images/resume.png)
+    ![Resume](images/resume.PNG)
 ___
 - ### Queue
-    ![Queue](images/queue.png)
+    ![Queue](images/queue.PNG)
 ___
 - ### Now
-    ![Now](images/now.png)
+    ![Now](images/now.PNG)
 ___
 - ### Skip
-    ![Skip](images/skip.png)
+    ![Skip](images/skip.PNG)
 ___
 - ### Volume
-    ![Volume](images/volume.png)
+    ![Volume](images/volume.PNG)
 ___
 - ### Seek
-    ![Seek](images/seek.png)
+    ![Seek](images/seek.PNG)
 
 ___
 
