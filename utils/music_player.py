@@ -334,6 +334,7 @@ class MusicPlayer(commands.Cog):
 
     @ commands.command()
     async def replace(self, ctx: commands.Context, src_index: int = -1, dest_index: int = -1):
+        """Interchanges the two song's indices"""
         global objects
 
         server_id = str(ctx.guild.id)
@@ -347,6 +348,25 @@ class MusicPlayer(commands.Cog):
 
         if objects[server_id].queue.replace(src_index, dest_index):
             return await ctx.send(embed=common_embed(value=f"The indices {src_index} and {dest_index} were replaced successfully", name="Song switched"))
+
+        return await ctx.send(embed=common_embed(value="An unknown error has occurred", name="Error playing audio", color=ERROR))
+
+    @ commands.command(aliases=['del'])
+    async def delete(self, ctx: commands.Context, index: int = -1):
+        """Deletes a particular index from the queue"""
+        global objects
+
+        server_id = str(ctx.guild.id)
+        voice_state = ctx.author.voice
+
+        if not voice_state:
+            return await ctx.send(embed=common_embed(value="You must join a Voice Channel first", name="Error playing audio", color=ERROR))
+
+        if index <= 0:
+            return await ctx.send(embed=common_embed(value="Provide valid index", name="Error deleting song", color=ERROR))
+
+        if objects[server_id].queue.delete(index):
+            return await ctx.send(embed=common_embed(value=f"The song at index {index} has been deleted successfully", name="Song Deleted"))
 
         return await ctx.send(embed=common_embed(value="An unknown error has occurred", name="Error playing audio", color=ERROR))
 

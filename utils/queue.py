@@ -49,3 +49,9 @@ class Queue():
         self.queue[dest_index - 1] = tmp
 
         return True
+
+    def delete(self, index: int) -> bool:
+        if index <= self.get_size():
+            self.queue.pop(index-1)
+            return True
+        return False
