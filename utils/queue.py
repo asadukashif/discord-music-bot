@@ -39,3 +39,13 @@ class Queue():
 
     def push_to_start(self, node: dict) -> None:
         self.queue.insert(0, node)
+
+    def replace(self, src_index: int, dest_index: int) -> bool:
+        if src_index > self.get_size() or dest_index > self.get_size():
+            return False
+
+        tmp = self.queue[src_index - 1]
+        self.queue[src_index - 1] = self.queue[dest_index - 1]
+        self.queue[dest_index - 1] = tmp
+
+        return True

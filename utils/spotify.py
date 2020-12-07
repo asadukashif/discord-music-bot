@@ -5,6 +5,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 
 from typing import *
+import random
 
 dotenv.load_dotenv("../.env")
 
@@ -31,7 +32,7 @@ class Song():
         return f"{self.song_name} by {self.format_artists()}"
 
 
-def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwMfK", limit: int = 10) -> List[Song]:
+def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwMfK", limit: int = 5) -> List[Song]:
     sp = spotipy.Spotify(
         auth_manager=SpotifyClientCredentials(client_id=os.getenv('SPOTIFY_CLIENT_SECRET'),
                                               client_secret=os.getenv('SPOTIFY_CLIENT_ID')))
@@ -49,4 +50,17 @@ def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwM
             artists.append(artist.get('name'))
         song = Song(track_name, artists)
         songs.append(song)
-    return songs
+
+    numbers_drawn: List[int] = []
+    songs_to_send: List[Song] = []
+
+    for i in range(limit):
+        while True:
+            rand_index = random.randint(0, len(songs))
+            if rand_index not in numbers_drawn:
+                numbers_drawn.append(rand_index)
+                break
+
+        songs_to_send.append(songs[rand_index])
+
+    return songs_to_send

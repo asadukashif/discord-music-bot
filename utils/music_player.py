@@ -49,7 +49,7 @@ class MusicPlayer(commands.Cog):
         await channel.connect()
 
     @commands.command(aliases=['p'])
-    async def play(self, ctx: commands.Context, *, url: str = "", is_seek: bool = False, seek_filename: str = "", seek_data: object = None, seek_time: int = 0):
+    async def play(self, ctx: commands.Context, *, url: str = ""):
         """Plays from a song by keywords or url"""
         global objects
 
@@ -61,10 +61,12 @@ class MusicPlayer(commands.Cog):
             if node is None:
                 return objects[server_id].reset()
             else:
-                player = node.get('player')
-                objects[server_id].current_song = player
+                player = YTDLSource(FFmpegPCMAudio(node.get('filename'), **get_ffmpeg_options(node.get('time'))),
+                                    data=node.get('data'))
                 ctx = node.get('ctx')
+                objects[server_id].current_song = player
                 objects[server_id].current_ctx = ctx
+                objects[server_id].curernt_node = node
 
                 ctx.voice_client.play(
                     player, after=lambda e: play_song())
@@ -74,50 +76,38 @@ class MusicPlayer(commands.Cog):
         voice_state = ctx.author.voice
         if not voice_state:
             return await ctx.send(embed=common_embed(value="You must join a Voice Channel first", name="Error playing audio", color=ERROR))
-        if not url and not is_seek:
+        if not url:
             return await ctx.send(embed=common_embed(value="You must provide the url or the name of the song", name="Error playing audio", color=ERROR))
         else:
             with ctx.typing():
                 if not ctx.voice_client:
                     await voice_state.channel.connect()
 
-                if is_seek:
-                    filename = seek_filename
-                    data = seek_data
-                    objects[server_id].is_first = True
-                else:
-                    filename, data = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
+                filename, data = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
 
-                player = YTDLSource(FFmpegPCMAudio(filename, **get_ffmpeg_options(seek_time)),
-                                    data=data)
+                objects[server_id].queue.push({
+                    'data': data, 'filename': filename, 'time': 0, 'ctx': ctx})
 
-                if not is_seek:
-                    await ctx.send(embed=get_song_start_embed(title=player.title,
-                                                              url=player.url,
-                                                              author=player.artist,
-                                                              thumbnail_obj=player.thumbnail_obj,
-                                                              duration=player.duration, requestee=(
-                                                                  ctx.author.nick or ctx.author.display_name)))
-                if is_seek:
-                    objects[server_id].queue.push_to_start({
-                        'player': player, 'ctx': ctx})
-                else:
-                    objects[server_id].queue.push({
-                        'player': player, 'ctx': ctx})
+                await ctx.send(embed=get_song_start_embed(title=data.get('title'), url=data.get('url'), author=data.get('artist'),
+                                                          thumbnail=data.get('thumbnails')[0].get('url'), duration=strftime("%M:%S", gmtime(data.get('duration'))),
+                                                          pos_in_queue=objects[server_id].queue.get_size(), requestee=(ctx.author.nick or ctx.author.display_name)))
 
                 if objects[server_id].is_first:
                     objects[server_id].is_first = False
 
                     node = objects[server_id].queue.pop()
 
-                    if is_seek:
-                        ctx.voice_client.stop()
+                    player = YTDLSource(FFmpegPCMAudio(node.get('filename'), **get_ffmpeg_options(node.get('time'))),
+                                        data=node.get('data'))
 
                     ctx.voice_client.play(
-                        node['player'], after=lambda e: play_song())
+                        player, after=lambda e: play_song())
+
+                    await ctx.send(embed=get_song_now_embed(player.title, player.url, author=player.artist, duration=player.duration, thumnail=player.thumbnail))
 
                     objects[server_id].current_ctx = ctx
-                    objects[server_id].current_song = node['player']
+                    objects[server_id].current_song = player
+                    objects[server_id].curernt_node = node
 
     @ commands.command(aliases=['s'])
     async def skip(self, ctx: commands.Context, index: int = -1):
@@ -176,7 +166,7 @@ class MusicPlayer(commands.Cog):
         init_server_object(ctx)
 
         await ctx.send(embed=get_song_stop_embed(objects[server_id].current_song.title,
-                                                 objects[server_id].current_song.thumbnail_obj))
+                                                 objects[server_id].current_song.thumbnail))
 
         ctx.voice_client.stop() if ctx.voice_client else ...
         objects[server_id].reset()
@@ -198,7 +188,7 @@ class MusicPlayer(commands.Cog):
         if ctx.voice_client != None and ctx.voice_client.is_playing():
             ctx.voice_client.pause()
             await ctx.send(embed=get_song_pause_embed(objects[server_id].current_song.title,
-                                                      objects[server_id].current_song.thumbnail_obj))
+                                                      objects[server_id].current_song.thumbnail))
 
     @ commands.command(aliases=['res'])
     async def resume(self, ctx: commands.Context):
@@ -214,7 +204,7 @@ class MusicPlayer(commands.Cog):
         if ctx.voice_client != None and ctx.voice_client.is_paused():
             ctx.voice_client.resume()
             await ctx.send(embed=get_song_resume_embed(objects[server_id].current_song.title,
-                                                       objects[server_id].current_song.thumbnail_obj))
+                                                       objects[server_id].current_song.thumbnail))
 
     @ commands.command(aliases=['q'])
     async def queue(self, ctx: commands.Context):
@@ -234,7 +224,7 @@ class MusicPlayer(commands.Cog):
         if ctx.voice_client and (ctx.voice_client.is_playing() or ctx.voice_client.is_paused()):
             if objects[server_id].current_song:
                 embed.set_thumbnail(
-                    url=objects[server_id].current_song.thumbnail_obj.get('url'))
+                    url=objects[server_id].current_song.thumbnail)
                 embed.add_field(
                     name=f"Currently Playing {objects[server_id].current_song.title}...", value=objects[server_id].current_song.artist)
                 embed.add_field(name="Duration",
@@ -242,12 +232,11 @@ class MusicPlayer(commands.Cog):
                 index = 0
                 for node in objects[server_id].queue.as_list():
                     index += 1
-                    node = node.get('player')
-                    embed.add_field(name=f'{index}. {node.title}',
-                                    value=node.artist, )
+                    node = node.get('data')
+                    embed.add_field(
+                        name=f'{index}. {node.get("title")}', value=node.get('artist'))
                     embed.add_field(name="Duration",
-                                    value=node.duration, inline=False)
-
+                                    value=strftime("%M:%S", gmtime(node.get('duration'))), inline=False)
             else:
                 embed.add_field(name='Empty',
                                 value="No more songs", inline=False)
@@ -311,11 +300,14 @@ class MusicPlayer(commands.Cog):
 
         await ctx.send(embed=common_embed(value=f"Seeking to " + strftime("%M:%S", gmtime(time)), name="Seeking ..."))
 
-        await self.play(ctx,
-                        is_seek=True,
-                        seek_data=current_song.data,
-                        seek_filename=current_song.filepath,
-                        seek_time=time)
+        current_node = objects[server_id].curernt_node
+        objects[server_id].queue.push_to_start({
+            'time': time,
+            'data': current_node.get('data'),
+            'filename': current_node.get('filename'),
+            'ctx': current_node.get('ctx')
+        })
+        ctx.voice_client.stop()
 
     @ commands.command()
     async def now(self, ctx: commands.Context):
@@ -333,13 +325,32 @@ class MusicPlayer(commands.Cog):
             return await ctx.send(embed=get_song_now_embed(title=player.title,
                                                            url=player.url,
                                                            author=player.artist,
-                                                           thumbnail_obj=player.thumbnail_obj,
+                                                           thumnail=player.thumbnail,
                                                            duration=player.duration))
         else:
             return await ctx.send(embed=common_embed(value="There's no song currently playing", name="Error getting the current song", color=ERROR))
 
+    @ commands.command()
+    async def replace(self, ctx: commands.Context, src_index: int = -1, dest_index: int = -1):
+        global objects
+
+        server_id = str(ctx.guild.id)
+        voice_state = ctx.author.voice
+
+        if not voice_state:
+            return await ctx.send(embed=common_embed(value="You must join a Voice Channel first", name="Error playing audio", color=ERROR))
+
+        if src_index < 0 or dest_index < 0:
+            return await ctx.send(embed=common_embed(value="Provide valid indices", name="Error playing audio", color=ERROR))
+
+        if objects[server_id].queue.replace(src_index, dest_index):
+            return await ctx.send(embed=common_embed(value=f"The indices {src_index} and {dest_index} were replaced successfully", name="Song switched"))
+
+        return await ctx.send(embed=common_embed(value="An unknown error has occurred", name="Error playing audio", color=ERROR))
+
     @ commands.command(aliases=['qspotify'])
-    async def queuespotify(self, ctx: commands.Context, limit: int = 10, playlist_code: str = ""):
+    async def queuespotify(self, ctx: commands.Context, limit: int = 5, playlist_code: str = ""):
+        """Gets the songs from our spotify playlist"""
         try:
             if playlist_code:
                 songs = spotify_songs(playlist_code, limit)

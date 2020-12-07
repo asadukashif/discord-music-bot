@@ -3,7 +3,7 @@ import asyncio
 import youtube_dl
 
 from time import strftime, gmtime
-
+from typing import Dict
 import os
 
 
@@ -31,41 +31,29 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         self.data = data
         self.title = data.get('title')
-        self.url = data.get('url')
+        self.url = data.get('webpage_url')
         self.song_id = data.get('id')
         self.artist = data.get('uploader')
-        thumbnail = data.get('thumbnails')[0]
-        self.thumbnail_obj = {
-            'url': thumbnail.get('url'),
-            'width': thumbnail.get('width'),
-            'height': thumbnail.get('height'),
-        }
+        self.thumbnail = data.get('thumbnails')[0].get('url')
         self.duration_secs = data.get('duration')
         self.filepath = data.get('filepath')
         self.duration = strftime("%M:%S", gmtime(self.duration_secs))
         self.data = data
 
     @classmethod
-    async def from_url(cls, url: str, *, loop=None, stream: bool = False, timestamp: int = 0) -> list:
+    async def from_url(cls, url: str, *, loop=None, stream: bool = False) -> list:
+        global songs
+
         loop = loop or asyncio.get_event_loop()
-        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url, download=not stream))
+        data = await loop.run_in_executor(None, lambda: ytdl.extract_info(url))
 
         if 'entries' in data:
-            # take first item from a playlist
             data = data['entries'][0]
 
-        if stream:
-            filename = data['url']
-        else:
-            filename = None
-            for f_name in os.listdir("./songs"):
-                if data.get('id') in f_name:
-                    filename = os.path.join("./songs", f_name)
-                    break
-            if filename is None:
-                filename = ytdl.prepare_filename(data)
+        filename = data['url'] if stream else ytdl.prepare_filename(data)
 
         data['filepath'] = filename
+
         return filename, data
 
 

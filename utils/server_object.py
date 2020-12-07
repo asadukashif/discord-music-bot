@@ -10,6 +10,7 @@ class ServerObject():
         self.queue = Queue()
         self.current_song = current_song
         self.current_ctx = current_ctx
+        self.curernt_node = {}
         self.is_first = True
         self.loop = False
 
