@@ -165,10 +165,12 @@ class MusicPlayer(commands.Cog):
 
         init_server_object(ctx)
 
-        await ctx.send(embed=get_song_stop_embed(objects[server_id].current_song.title,
-                                                 objects[server_id].current_song.thumbnail))
+        if ctx.voice_client.is_playing():
+            await ctx.send(embed=get_song_stop_embed(objects[server_id].current_song.title,
+                                                     objects[server_id].current_song.thumbnail))
 
-        ctx.voice_client.stop() if ctx.voice_client else ...
+            ctx.voice_client.stop()
+
         objects[server_id].reset()
         await ctx.voice_client.disconnect()
 
