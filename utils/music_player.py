@@ -478,8 +478,8 @@ class MusicPlayer(commands.Cog):
             objects[server_id].queue.push_to_start(
                 objects[server_id].curernt_node)
 
-        return await ctx.send(embed=common_embed(name="Loop Status Changed", value="The loop is currently %s"
-                                                 "activated" if objects[server_id].loop else "deactivated"))
+        return await ctx.send(embed=common_embed(name="Loop Status Changed", value="The loop is currently {}".
+                                                 format("activated" if objects[server_id].loop else "deactivated")))
 
     @ commands.command(aliases=['qspotify'])
     async def queuespotify(self, ctx: commands.Context, limit: int = 5, playlist_code: str = ""):
