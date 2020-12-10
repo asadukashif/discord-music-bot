@@ -10,7 +10,7 @@ import random
 dotenv.load_dotenv("../.env")
 
 
-class Song():
+class SpotifySong():
     def __init__(self, song_name: str, artists: List[str]) -> None:
         self.song_name = song_name
         self.artists = artists
@@ -32,10 +32,10 @@ class Song():
         return f"{self.song_name} by {self.format_artists()}"
 
 
-def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwMfK", limit: int = 5) -> List[Song]:
+def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwMfK", limit: int = 5) -> List[SpotifySong]:
     sp = spotipy.Spotify(
-        auth_manager=SpotifyClientCredentials(client_id=os.getenv('SPOTIFY_CLIENT_SECRET'),
-                                              client_secret=os.getenv('SPOTIFY_CLIENT_ID')))
+        auth_manager=SpotifyClientCredentials(client_id=os.getenv('SPOTIFY_CLIENT_ID'),
+                                              client_secret=os.getenv('SPOTIFY_CLIENT_SECRET')))
     tracks = sp.playlist_tracks(
         spotify_playlist, limit=limit)
 
@@ -48,11 +48,11 @@ def spotify_songs(spotify_playlist: str = "spotify:playlist:5w9MQEn7bjYGIBMBGkwM
         artists = []
         for artist in artist_object:
             artists.append(artist.get('name'))
-        song = Song(track_name, artists)
+        song = SpotifySong(track_name, artists)
         songs.append(song)
 
     numbers_drawn: List[int] = []
-    songs_to_send: List[Song] = []
+    songs_to_send: List[SpotifySong] = []
 
     for i in range(limit):
         while True:

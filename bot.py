@@ -1,11 +1,12 @@
-import dotenv
 import os
+
+import dotenv
 from discord.ext import commands
 
 from utils.music_player import MusicPlayer
 
 dotenv.load_dotenv(".env")
-bot = commands.Bot(command_prefix=["."], case_insensitive=True)
+bot = commands.Bot(command_prefix=["~"], case_insensitive=True)
 
 
 @bot.event

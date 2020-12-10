@@ -2,13 +2,14 @@
 from typing import Any, List
 from itertools import permutations
 import random
+from .song import Song
 
 
 class Queue():
     def __init__(self) -> None:
         self.queue = []
 
-    def push(self, node: dict) -> None:
+    def push(self, node: Song) -> None:
         self.queue.append(node)
 
     def pop(self) -> dict:
@@ -37,7 +38,7 @@ class Queue():
             return True
         return False
 
-    def push_to_start(self, node: dict) -> None:
+    def push_to_start(self, node: Song) -> None:
         self.queue.insert(0, node)
 
     def replace(self, src_index: int, dest_index: int) -> bool:

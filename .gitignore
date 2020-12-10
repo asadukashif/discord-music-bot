@@ -1,0 +1,6 @@
+.vscode
+test.py
+.env
+utils/__pycache__
+__pycache__
+songs/*
