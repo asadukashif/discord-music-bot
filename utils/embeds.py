@@ -1,4 +1,4 @@
-from math import ceil
+from math import ceil, floor
 from time import time
 from typing import Tuple
 
@@ -61,7 +61,7 @@ def get_song_now_embed(title: str = "",
     est_time = elapsed / total_duration
     est_time *= 10
     for i in range(10):
-        if ceil(est_time) == i:
+        if floor(est_time) == i:
             trail += "►"
         else:
             trail += "—"

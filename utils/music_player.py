@@ -82,7 +82,7 @@ class MusicPlayer(commands.Cog):
                 # Makes the player that will be played
                 player = YTDLSource(FFmpegPCMAudio(node.filename, **get_ffmpeg_options(node.time)),
                                     data=node.data)
-                ctx = node.ctx
+                ctx = node.ct
                 objects[server_id].current_song = player
                 objects[server_id].current_ctx = ctx
                 objects[server_id].curernt_node = node
@@ -113,7 +113,7 @@ class MusicPlayer(commands.Cog):
                     # Gets and downloads the video and returns its filename on disk and data.
                     filename, data = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
                 except Exception:
-                    await self.stop(ctx)
+                    await self.stop(ctx, clear_queue=False)
                     return await ctx.send(embed=common_embed(name="Error Playing Song",
                                                              value="The song couldn't be found. Try being a little more specific in the naming",
                                                              color=ERROR))
@@ -211,7 +211,7 @@ class MusicPlayer(commands.Cog):
             await ctx.send(embed=common_embed(name="Volume Level", value="The current volume is " + str(ctx.voice_client.source.volume * 100)))
 
     @ commands.command(aliases=[])
-    async def stop(self, ctx: commands.Context):
+    async def stop(self, ctx: commands.Context, clear_queue: bool = True):
         """Stops and disconnects the bot from voice"""
         global objects
 
@@ -230,7 +230,8 @@ class MusicPlayer(commands.Cog):
                                                      objects[server_id].current_song.thumbnail))
 
         # Resets the object and disconnects
-        objects[server_id].reset()
+        if clear_queue:
+            objects[server_id].reset()
         await ctx.voice_client.disconnect()
 
     @ commands.command(aliases=['pau'])
