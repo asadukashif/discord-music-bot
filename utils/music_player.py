@@ -82,7 +82,7 @@ class MusicPlayer(commands.Cog):
                 # Makes the player that will be played
                 player = YTDLSource(FFmpegPCMAudio(node.filename, **get_ffmpeg_options(node.time)),
                                     data=node.data)
-                ctx = node.ct
+                ctx = node.ctx
                 objects[server_id].current_song = player
                 objects[server_id].current_ctx = ctx
                 objects[server_id].curernt_node = node
