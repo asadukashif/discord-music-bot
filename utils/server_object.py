@@ -16,8 +16,8 @@ class ServerObject():
         self.loop = False
         self.current_starttime = 0.0
 
-    def reset(self):
-        self.queue = Queue()
+    def reset(self, clear_queue: bool = True):
+        self.queue.clear() if clear_queue else ...
         self.current_song = None
         self.is_first = True
         self.loop = False
