@@ -83,7 +83,7 @@ class MusicPlayer(commands.Cog):
                 ctx = node.ctx
                 objects[server_id].current_song = player
                 objects[server_id].current_ctx = ctx
-                objects[server_id].curernt_node = node
+                objects[server_id].current = node
                 objects[server_id].current_time = Time(start=time(),
                                                        initial_seek=node.time)
 
@@ -109,7 +109,6 @@ class MusicPlayer(commands.Cog):
 
                 # Gets and downloads the video and returns its filename on disk and data.
                 filename, data = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
-
 
                 # Pushes the song to the queue
                 objects[server_id].queue.push(Song(ctx=ctx,
@@ -144,7 +143,7 @@ class MusicPlayer(commands.Cog):
 
                     objects[server_id].current_ctx = ctx
                     objects[server_id].current_song = player
-                    objects[server_id].curernt_node = node
+                    objects[server_id].current = node
                     objects[server_id].current_time = Time(start=time())
 
     @ commands.command(aliases=['s'])
@@ -380,7 +379,7 @@ class MusicPlayer(commands.Cog):
 
         await ctx.send(delete_after=STANDARD_DELETION_TIME, embed=common_embed(value=f"Seeking to " + strftime("%H:%M:%S", gmtime(time)), name="Seeking ..."))
 
-        current_node = objects[server_id].curernt_node
+        current_node = objects[server_id].current
         # Setting the seek time
         current_node.time = time
         objects[server_id].queue.push_to_start(current_node)
@@ -470,7 +469,7 @@ class MusicPlayer(commands.Cog):
         # Adds the current song to the start of the queue
         if objects[server_id].loop:
             objects[server_id].queue.push_to_start(
-                objects[server_id].curernt_node)
+                objects[server_id].current)
 
         return await ctx.send(delete_after=STANDARD_DELETION_TIME, embed=common_embed(name="Loop Status Changed", value="The loop is currently {}".
                                                                                       format("activated" if objects[server_id].loop else "deactivated")))

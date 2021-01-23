@@ -11,7 +11,7 @@ class ServerObject():
         self.queue = Queue()
         self.current_song = current_song
         self.current_ctx = current_ctx
-        self.curernt_node = Song
+        self.current_node = Song
         self.is_first = True
         self.loop = False
         self.current_starttime = 0.0
